@@ -40,8 +40,8 @@ button, input, select { font: inherit; }
 .mood-scale img.is-changing { opacity: 0; transform: scale(.92); }
 .success-banner p { word-break: break-word; width: 100%; min-height: 18px; margin: 20px 0 0; color: #969697; font: 500 13px/1.4 "Plus Jakarta Sans", sans-serif; }
 .meter-card { background: #fff; border-radius: 30px; padding: 30px 20px; }
-.meter { position: relative; height: 181px; overflow: hidden; }
-.gauge { position: absolute; width: 350px; height: 181px; left: 50%; top: 0; transform: translateX(-50%); overflow: hidden; }
+.meter { position: relative; height: 181px; overflow: visible; }
+.gauge { position: absolute; width: 350px; height: 181px; left: 50%; top: 0; transform: translateX(-50%); overflow: visible; }
 .gauge-bar { position: absolute; left: 50%; bottom: 0; width: 15px; height: 63px; border-radius: 2px; transform-origin: 50% 100%; opacity: 0; transform: translateX(-50%) rotate(var(--angle)) translateY(-105px) scaleY(0); transition: opacity 120ms ease-in-out, transform 750ms ease-in-out; }
 .gauge-bar::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: inherit; }
 .gauge-bar.is-visible { opacity: 1; transform: translateX(-50%) rotate(var(--angle)) translateY(-105px) scaleY(1); }
@@ -49,7 +49,7 @@ button, input, select { font: inherit; }
 .gauge-bar.track::after { filter: grayscale(1); background: #c9c9cc; }
 .score { position: absolute; top: 91px; left: 0; width: 100%; text-align: center; font: 600 55px/1 "Plus Jakarta Sans", sans-serif; letter-spacing: -1.6px; }
 .meter-label { position: absolute; top: 164px; left: 0; width: 100%; text-align: center; color: #000; font-size: 13px; }
-.recommendation { min-height: 32px; margin: 8px 0 0; color: #2d2d2f; text-align: center; font: 500 12px/1.4 "Plus Jakarta Sans", sans-serif; }
+.recommendation { min-height: 32px; margin: 18px 0 0; color: #2d2d2f; text-align: center; font: 500 12px/1.4 "Plus Jakarta Sans", sans-serif; }
 .legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 3px; margin-top: 20px; font-size: 12px; }
 .legend-item { display: flex; align-items: center; gap: 3px; padding: 5px; }
 .pill { display: flex; align-items: center; gap: 3px; border-radius: 100px; padding: 5px 6px; font-weight: 500; }
