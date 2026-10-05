@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RateCheck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Aleo:wght@400;500;700&family=Crimson+Pro:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="page">
+        <header class="intro">
+            <h1 class="brand">RateCheck.</h1>
+            <p class="subtitle">Choose two <strong>currencies</strong> and a <strong>goal</strong>.</p>
+        </header>
+
+        <section class="card" aria-label="Currency conversion">
+            <div class="date" id="dateLabel"></div>
+            <div class="goal-row">I want to <label class="goal" for="goalSelect"><select id="goalSelect" aria-label="Choose goal"><option value="sell">sell</option><option value="buy">buy</option></select><img src="https://www.figma.com/api/mcp/asset/b2e089f1-be11-4c30-88b4-47fa8d9836ed.svg" alt=""></label></div>
+            <div class="currency-row">
+                <label class="currency" aria-label="Select source currency"><img id="fromFlag" alt="Source currency flag"> <select id="fromCurrency"></select><span class="chevron">⌄</span></label>
+                <label class="amount-wrap"><span class="currency-symbol" id="fromSymbol">Rp</span><input class="amount" id="fromAmount" type="number" min="0" step="any" value="0" aria-label="Source amount"></label>
+            </div>
+            <div class="swap-row"><button class="swap" type="button" aria-label="Swap currencies"><span>Swap</span><span class="swap-icon">↔</span></button></div>
+            <div class="currency-row">
+                <label class="currency" aria-label="Select target currency"><img id="toFlag" alt="Target currency flag"> <select id="toCurrency"></select><span class="chevron">⌄</span></label>
+                <label class="amount-wrap"><span class="currency-symbol" id="toSymbol">$</span><input class="amount" id="toAmount" value="0" aria-label="Target amount" readonly></label>
+            </div>
+            <div class="rate">Rate: <strong id="rateValue">—</strong></div>
+            <div class="status" id="status" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="success-banner" id="successBanner" aria-live="polite" aria-label="Rate recommendation">
+            <div class="mood-scale" id="moodScale">
+                <img data-state="strongly-unfavorable" alt="Strongly unfavorable rate">
+                <img data-state="unfavorable" alt="Unfavorable rate">
+                <img data-state="typical" alt="Typical rate">
+                <img data-state="favorable" alt="Favorable rate">
+                <img data-state="strongly-favorable" alt="Strongly favorable rate">
+            </div>
+            <p id="bannerMessage">Loading recommendation…</p>
+        </section>
+
+        <section class="meter-card" aria-label="Currency rate meter">
+            <div class="meter" id="meter">
+                <div class="gauge" id="gauge" aria-hidden="true"></div>
+                <div class="score" id="score">—</div>
+                <div class="meter-label">Currency Rate Meter</div>
+            </div>
+            <p class="recommendation" id="recommendation" aria-live="polite">Loading recommendation…</p>
+            <div class="legend">
+                <div class="legend-item"><span class="pill up" id="roc30">↗ —</span> 30 day average</div>
+                <div class="legend-item"><span class="pill down" id="roc365">↘ —</span> 1Y average</div>
+            </div>
+        </section>
+    </main>
+    <script src="app.js" defer></script>
+</body>
+</html>
