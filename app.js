@@ -85,6 +85,13 @@ function updateRecommendation(score, period) {
         unfavorable: `Worse than usual for ${action}.`,
         "strongly-unfavorable": `Among the weakest rates of the last ${period} days for ${action}.`
     };
+    const moodCopy = {
+        "strongly-unfavorable": "Its a very bad day,",
+        unfavorable: "Its a bad day",
+        typical: "Its a neutral day",
+        favorable: "Its a good day",
+        "strongly-favorable": "Its a great day!"
+    };
     meter.dataset.state = state;
     const bars = [...gauge.querySelectorAll(".data-bar")];
     const activeBars = Math.round((score / 100) * bars.length);
@@ -93,7 +100,7 @@ function updateRecommendation(score, period) {
         bar.style.transitionDelay = index < activeBars ? `${index * 35}ms` : `${(bars.length - index) * 20}ms`;
     });
     recommendation.textContent = `${label}: ${copy[state]}`;
-    bannerMessage.textContent = copy[state];
+    bannerMessage.textContent = moodCopy[state];
     bannerMessage.dataset.state = state;
     const transitionId = ++moodTransitionId;
     moodIcons.forEach(icon => {
