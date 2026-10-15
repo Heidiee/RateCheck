@@ -8,6 +8,7 @@ const toFlag = document.querySelector("#toFlag");
 const goal = document.querySelector("#goalSelect");
 const fromSymbol = document.querySelector("#fromSymbol");
 const toSymbol = document.querySelector("#toSymbol");
+const periodToggles = [...document.querySelectorAll(".period-toggle")];
 const status = document.querySelector("#status");
 const meter = document.querySelector("#meter");
 const recommendation = document.querySelector("#recommendation");
@@ -15,6 +16,7 @@ const gauge = document.querySelector("#gauge");
 const bannerMessage = document.querySelector("#bannerMessage");
 const moodIcons = [...document.querySelectorAll("#moodScale img")];
 let goalMode = "sell";
+let measurementPeriod = 30;
 let moodTransitionId = 0;
 const moodIconSources = {
     "strongly-unfavorable": {
@@ -80,6 +82,11 @@ function createGaugeBars() {
         bar.dataset.index = index;
         gauge.appendChild(bar);
     }
+}
+
+function updateGoalCopy() {
+    document.querySelector(".goal-suffix").textContent = goalMode === "buy" ? "this currency" : "from this currency";
+    document.querySelector(".destination-label").textContent = goalMode === "buy" ? "from this currency" : "to this currency";
 }
 
 function updateRecommendation(score, period) {
@@ -263,21 +270,22 @@ async function refreshRate() {
     try {
         const [today, values] = await Promise.all([loadRate(from, to), loadHistory(from, to)]);
         if (!values.length) throw new Error("No historical data available");
-        const last30 = values.slice(-30);
-        const average30 = mean(last30);
+        const periodValues = values.slice(-measurementPeriod);
+        const average30 = mean(values.slice(-30));
         const average365 = mean(values);
+        const measuredAverage = mean(periodValues);
         const roc30 = ((today - average30) / average30) * 100;
         const roc365 = ((today - average365) / average365) * 100;
-        const z = (today - average30) / (standardDeviation(last30) || 1);
-        const percentile = last30.filter(value => value <= today).length / last30.length;
+        const z = (today - measuredAverage) / (standardDeviation(periodValues) || 1);
+        const percentile = periodValues.filter(value => value <= today).length / periodValues.length;
         const score = Math.max(0, Math.min(100, Math.round(goalMode === "buy" ? (1 - percentile) * 100 : percentile * 100)));
         document.querySelector("#rateValue").textContent = format.format(today);
         toAmount.value = amountFormat.format(amount * today);
         document.querySelector("#score").textContent = score;
-        updateRecommendation(score, last30.length);
-        document.querySelector("#roc30").textContent = `↗ ${percent(roc30)}`;
-        document.querySelector("#roc365").textContent = `↘ ${percent(roc365)}`;
-        setStatus(`Based on ${last30.length} days. Z-score: ${z.toFixed(2)}.`);
+        updateRecommendation(score, periodValues.length);
+        document.querySelector("#roc30").textContent = percent(roc30);
+        document.querySelector("#roc365").textContent = percent(roc365);
+        setStatus(`Based on ${periodValues.length} days. Z-score: ${z.toFixed(2)}.`);
     } catch (error) {
         console.error("Frankfurter error:", error);
         setStatus(`Unable to load rates: ${error.message}`, true);
@@ -324,6 +332,7 @@ goalOptions.forEach(option => option.addEventListener("click", () => {
     goal.value = option.dataset.value;
     goalMode = goal.value;
     goalValue.textContent = goal.value;
+    updateGoalCopy();
     updateSymbols();
     goalOptions.forEach(item => item.setAttribute("aria-selected", String(item === option)));
     closeGoalCombobox();
@@ -336,11 +345,22 @@ document.addEventListener("click", event => {
 goal.addEventListener("change", () => {
     goalMode = goal.value;
     goalValue.textContent = goal.value;
+    updateGoalCopy();
     updateSymbols();
     refreshRate();
 });
+periodToggles.forEach(toggle => toggle.addEventListener("click", () => {
+    measurementPeriod = Number(toggle.dataset.period);
+    periodToggles.forEach(option => {
+        const isActive = Number(option.dataset.period) === measurementPeriod;
+        option.classList.toggle("is-active", isActive);
+        option.setAttribute("aria-pressed", String(isActive));
+    });
+    refreshRate();
+}));
 
 createGaugeBars();
+updateGoalCopy();
 
 (async function init() {
     try {

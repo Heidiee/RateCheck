@@ -320,8 +320,38 @@ select {
   flex: 0 0 auto;
   transform: rotate(90deg);
 }
-.rate {
+.rate-row {
   padding-top: 15px;
+}
+.period-toggles {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding-bottom: 20px;
+}
+.period-toggle {
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 100px;
+  outline: none;
+  background: #f6f6f8;
+  color: #8d99b3;
+  font: 500 12px/15px "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+}
+.period-toggle:focus,
+.period-toggle:focus-visible {
+  outline: none;
+}
+.period-toggle:hover,
+.period-toggle.is-active,
+.period-toggle[aria-pressed="true"] {
+  border-color: transparent;
+  background: #ffefff;
+  color: #d079d0;
+}
+.rate {
   text-align: center;
   color: #969697;
   font-size: 12px;
@@ -395,7 +425,7 @@ select {
 .meter-card {
   background: #fff;
   border-radius: 30px;
-  padding: 30px 20px;
+  padding: 30px 20px 10px;
 }
 .disclaimer {
   margin-top: 18px;
@@ -471,20 +501,33 @@ select {
   font-size: 13px;
 }
 .recommendation {
-  min-height: 32px;
-  margin: 18px 0 0;
-  color: #2d2d2f;
+  min-height: 18px;
+  height: auto;
+  width: 100%;
+  margin: 0;
+  color: #000;
   text-align: center;
   font:
-    500 12px/1.4 "Plus Jakarta Sans",
+    500 12px/normal "Plus Jakarta Sans",
     sans-serif;
+}
+.legend-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: calc(100% + 40px);
+  border-top: 1px solid rgba(221, 221, 223, 0.5);
+  padding: 20px 20px 10px;
+  margin: 10px -20px 0;
 }
 .legend {
   display: flex;
   justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 3px;
-  margin-top: 20px;
+  gap: 0;
+  margin-top: 0;
   font-size: 12px;
 }
 .legend-item {
@@ -492,6 +535,9 @@ select {
   align-items: center;
   gap: 3px;
   padding: 5px;
+  border-radius: 18px;
+  font: 500 12px/normal "Plus Jakarta Sans", sans-serif;
+  color: #000;
 }
 .pill {
   display: flex;
@@ -500,6 +546,11 @@ select {
   border-radius: 100px;
   padding: 5px 6px;
   font-weight: 500;
+}
+.pill-arrow {
+  display: block;
+  width: 14px;
+  height: 14px;
 }
 .pill.up {
   color: #57d162;

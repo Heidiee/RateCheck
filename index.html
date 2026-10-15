@@ -62,7 +62,9 @@
                 </div>
                 <label class="amount-wrap"><span class="currency-symbol" id="toSymbol">$</span><input class="amount" id="toAmount" value="0.00" aria-label="Target amount" readonly></label>
             </div>
-            <div class="rate">Rate: <strong id="rateValue">—</strong></div>
+            <div class="rate-row">
+                <div class="rate">Rate: <strong id="rateValue">—</strong></div>
+            </div>
             <div class="status" id="status" role="status" aria-live="polite"></div>
         </section>
 
@@ -83,10 +85,16 @@
                 <div class="score" id="score">—</div>
                 <div class="meter-label">Currency Rate Meter</div>
             </div>
-            <p class="recommendation" id="recommendation" aria-live="polite">Loading recommendation…</p>
-            <div class="legend">
-                <div class="legend-item"><span class="pill up" id="roc30">↗ —</span> 30 day average</div>
-                <div class="legend-item"><span class="pill down" id="roc365">↘ —</span> 1Y average</div>
+            <div class="period-toggles" role="group" aria-label="Rate measurement period">
+                <button class="period-toggle is-active" data-period="30" type="button" aria-pressed="true">Past 30 days</button>
+                <button class="period-toggle" data-period="356" type="button" aria-pressed="false">Past 1 year</button>
+            </div>
+            <div class="legend-block">
+                <p class="recommendation" id="recommendation" aria-live="polite">Loading recommendation…</p>
+                <div class="legend">
+                    <div class="legend-item"><span class="pill up"><img class="pill-arrow" src="assets/figma-arrow-positive.svg" alt=""><span id="roc30">—</span></span><span>30</span><span>day average</span></div>
+                    <div class="legend-item"><span class="pill down"><img class="pill-arrow" src="assets/figma-arrow-negative.svg" alt=""><span id="roc365">—</span></span><span>1Y</span><span>average</span></div>
+                </div>
             </div>
         </section>
         <footer class="disclaimer">This is not financial advice</footer>
