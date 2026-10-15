@@ -89,6 +89,17 @@ function updateGoalCopy() {
     document.querySelector(".destination-label").textContent = goalMode === "buy" ? "from this currency" : "to this currency";
 }
 
+function updateTrendPill(valueId, trendValue) {
+    const value = document.querySelector(`#${valueId}`);
+    const pill = value.closest(".pill");
+    const arrow = pill.querySelector(".pill-arrow");
+    const isPositive = trendValue >= 0;
+    pill.classList.toggle("up", isPositive);
+    pill.classList.toggle("down", !isPositive);
+    arrow.src = isPositive ? "assets/figma-arrow-positive.svg" : "assets/figma-arrow-negative.svg";
+    arrow.alt = isPositive ? "Positive trend" : "Negative trend";
+}
+
 function updateRecommendation(score, period) {
     const [state, label] = getRating(score);
     const action = goalMode === "buy" ? "buying" : "selling";
@@ -285,6 +296,8 @@ async function refreshRate() {
         updateRecommendation(score, periodValues.length);
         document.querySelector("#roc30").textContent = percent(roc30);
         document.querySelector("#roc365").textContent = percent(roc365);
+        updateTrendPill("roc30", roc30);
+        updateTrendPill("roc365", roc365);
         setStatus(`Based on ${periodValues.length} days. Z-score: ${z.toFixed(2)}.`);
     } catch (error) {
         console.error("Frankfurter error:", error);
