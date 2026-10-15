@@ -39,6 +39,9 @@ const moodIconSources = {
     }
 };
 const currencySymbols = { AED: "د.إ", AUD: "$", CAD: "$", CHF: "CHF", CNY: "¥", CZK: "Kč", DKK: "kr", EUR: "€", GBP: "£", HKD: "$", HUF: "Ft", IDR: "Rp", INR: "₹", JPY: "¥", KRW: "₩", MXN: "$", MYR: "RM", NOK: "kr", NZD: "$", PHP: "₱", PLN: "zł", SEK: "kr", SGD: "$", THB: "฿", TRY: "₺", USD: "$", ZAR: "R" };
+const currencyCountries = {
+    AED: "United Arab Emirates", AFN: "Afghanistan", ALL: "Albania", AMD: "Armenia", ANG: "Curaçao", AOA: "Angola", ARS: "Argentina", AUD: "Australia", AWG: "Aruba", AZN: "Azerbaijan", BAM: "Bosnia and Herzegovina", BBD: "Barbados", BDT: "Bangladesh", BHD: "Bahrain", BIF: "Burundi", BMD: "Bermuda", BND: "Brunei", BOB: "Bolivia", BRL: "Brazil", BSD: "Bahamas", BTN: "Bhutan", BWP: "Botswana", BYN: "Belarus", BZD: "Belize", CAD: "Canada", CDF: "Democratic Republic of the Congo", CHF: "Switzerland", CLP: "Chile", CNH: "China", CNY: "China", COP: "Colombia", CRC: "Costa Rica", CUP: "Cuba", CVE: "Cape Verde", CZK: "Czechia", DJF: "Djibouti", DKK: "Denmark", DOP: "Dominican Republic", DZD: "Algeria", EGP: "Egypt", ERN: "Eritrea", ETB: "Ethiopia", EUR: "European Union", FJD: "Fiji", FKP: "Falkland Islands", GBP: "United Kingdom", GEL: "Georgia", GGP: "Guernsey", GHS: "Ghana", GIP: "Gibraltar", GMD: "The Gambia", GNF: "Guinea", GTQ: "Guatemala", GYD: "Guyana", HKD: "Hong Kong", HNL: "Honduras", HTG: "Haiti", HUF: "Hungary", IDR: "Indonesia", ILS: "Israel", INR: "India", IQD: "Iraq", IRR: "Iran", ISK: "Iceland", JEP: "Jersey", JMD: "Jamaica", JOD: "Jordan", JPY: "Japan", KES: "Kenya", KGS: "Kyrgyzstan", KHR: "Cambodia", KMF: "Comoros", KPW: "North Korea", KRW: "South Korea", KWD: "Kuwait", KYD: "Cayman Islands", KZT: "Kazakhstan", LAK: "Laos", LBP: "Lebanon", LKR: "Sri Lanka", LRD: "Liberia", LSL: "Lesotho", LYD: "Libya", MAD: "Morocco", MDL: "Moldova", MGA: "Madagascar", MKD: "North Macedonia", MMK: "Myanmar", MNT: "Mongolia", MOP: "Macau", MRU: "Mauritania", MUR: "Mauritius", MVR: "Maldives", MWK: "Malawi", MXN: "Mexico", MYR: "Malaysia", MZN: "Mozambique", NAD: "Namibia", NGN: "Nigeria", NIO: "Nicaragua", NOK: "Norway", NPR: "Nepal", NZD: "New Zealand", OMR: "Oman", PAB: "Panama", PEN: "Peru", PGK: "Papua New Guinea", PHP: "Philippines", PKR: "Pakistan", PLN: "Poland", PYG: "Paraguay", QAR: "Qatar", RON: "Romania", RSD: "Serbia", RUB: "Russia", RWF: "Rwanda", SAR: "Saudi Arabia", SBD: "Solomon Islands", SCR: "Seychelles", SDG: "Sudan", SEK: "Sweden", SGD: "Singapore", SHP: "Saint Helena", SLE: "Sierra Leone", SOS: "Somalia", SRD: "Suriname", SSP: "South Sudan", STN: "São Tomé and Príncipe", SVC: "El Salvador", SYP: "Syria", SZL: "Eswatini", THB: "Thailand", TJS: "Tajikistan", TMT: "Turkmenistan", TND: "Tunisia", TOP: "Tonga", TRY: "Türkiye", TTD: "Trinidad and Tobago", TWD: "Taiwan", TZS: "Tanzania", UAH: "Ukraine", UGX: "Uganda", USD: "United States", UYU: "Uruguay", UZS: "Uzbekistan", VES: "Venezuela", VND: "Vietnam", VUV: "Vanuatu", WST: "Samoa", XAF: "Central African CFA zone", XCD: "East Caribbean", XOF: "West African CFA zone", XPF: "French Pacific territories", YER: "Yemen", ZAR: "South Africa", ZMW: "Zambia", ZWG: "Zimbabwe"
+};
 const format = new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 });
 const amountFormat = new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const numberParts = amountFormat.formatToParts(1234.5);
@@ -134,15 +137,20 @@ function setFlag(select, image) {
     image.alt = `${select.value} flag`;
 }
 
+function currencyLabel(code) {
+    const country = currencyCountries[code] || code;
+    return `${country} (${code})`;
+}
+
 function renderCombobox(select) {
     const combobox = select.closest(".currency-combobox");
     const value = combobox.querySelector(".combobox-value");
     const list = combobox.querySelector(".combobox-options");
     const query = combobox.querySelector(".combobox-search").value.trim().toLowerCase();
-    const options = [...select.options].filter(option => option.textContent.toLowerCase().includes(query));
+    const options = [...select.options].filter(option => currencyLabel(option.value).toLowerCase().includes(query));
     value.textContent = select.value || "—";
     list.innerHTML = options.length
-        ? options.map(option => `<li class="combobox-option" role="option" tabindex="-1" data-value="${option.value}" aria-selected="${option.value === select.value}">${option.textContent}</li>`).join("")
+        ? options.map(option => `<li class="combobox-option" role="option" tabindex="-1" data-value="${option.value}" aria-selected="${option.value === select.value}">${currencyLabel(option.value)}</li>`).join("")
         : `<li class="combobox-empty">No currencies found</li>`;
 }
 
@@ -194,16 +202,16 @@ function updateSymbols() {
 
 function populateCurrencies(currencies) {
     const options = currencies
-        .sort((a, b) => a.iso_code.localeCompare(b.iso_code))
-        .map(currency => `<option value="${currency.iso_code}">${currency.iso_code}</option>`)
+        .sort((a, b) => (currencyCountries[a.iso_code] || a.name).localeCompare(currencyCountries[b.iso_code] || b.name))
+        .map(currency => `<option value="${currency.iso_code}">${currencyLabel(currency.iso_code)}</option>`)
         .join("");
     fromCurrency.innerHTML = options;
     toCurrency.innerHTML = options;
-    fromCurrency.value = currencies.some(item => item.iso_code === "IDR") ? "IDR" : currencies[0].iso_code;
-    toCurrency.value = currencies.some(item => item.iso_code === "AUD")
-        ? "AUD"
+    fromCurrency.value = currencies.some(item => item.iso_code === "CAD") ? "CAD" : currencies[0].iso_code;
+    toCurrency.value = currencies.some(item => item.iso_code === "USD")
+        ? "USD"
         : currencies.find(item => item.iso_code !== fromCurrency.value)?.iso_code || fromCurrency.value;
-    fromAmount.value = amountFormat.format(1000);
+    fromAmount.value = amountFormat.format(1);
     setFlag(fromCurrency, fromFlag);
     setFlag(toCurrency, toFlag);
     updateSymbols();
