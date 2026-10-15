@@ -18,15 +18,49 @@
 
         <section class="card" aria-label="Currency conversion">
             <div class="date" id="dateLabel"></div>
-            <div class="goal-row">I want to <label class="goal" for="goalSelect"><select id="goalSelect" aria-label="Choose goal"><option value="sell">sell</option><option value="buy">buy</option></select><img src="https://www.figma.com/api/mcp/asset/b2e089f1-be11-4c30-88b4-47fa8d9836ed.svg" alt=""></label></div>
+            <div class="goal-row"><span>I want to</span> <div class="goal goal-combobox">
+                <select id="goalSelect" tabindex="-1" aria-hidden="true"><option value="sell">sell</option><option value="buy">buy</option></select>
+                <button class="goal-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="goal-options" aria-label="Choose goal"><span class="goal-value">sell</span><img class="goal-chevron" src="assets/figma-chevron.svg" alt=""></button>
+                <ul class="goal-options" id="goal-options" role="listbox">
+                    <li role="option" data-value="sell" aria-selected="true">sell</li>
+                    <li role="option" data-value="buy" aria-selected="false">buy</li>
+                </ul>
+            </div><span class="goal-suffix">from this currency</span></div>
             <div class="currency-row">
-                <label class="currency" aria-label="Select source currency"><img id="fromFlag" alt="Source currency flag"> <select id="fromCurrency"></select><span class="chevron">⌄</span></label>
-                <label class="amount-wrap"><span class="currency-symbol" id="fromSymbol">Rp</span><input class="amount" id="fromAmount" type="number" min="0" step="any" value="0" aria-label="Source amount"></label>
+                <div class="currency currency-combobox" data-select-id="fromCurrency">
+                    <select id="fromCurrency" tabindex="-1" aria-hidden="true"></select>
+                    <button class="combobox-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="fromCurrency-listbox" aria-label="Select source currency">
+                        <img id="fromFlag" alt="">
+                        <span class="combobox-value">—</span>
+                        <img class="chevron" src="assets/figma-chevron.svg" alt="">
+                    </button>
+                    <div class="combobox-menu" role="presentation">
+                        <input class="combobox-search" type="search" placeholder="Search currency" aria-label="Search source currencies" autocomplete="off">
+                        <ul class="combobox-options" id="fromCurrency-listbox" role="listbox"></ul>
+                    </div>
+                </div>
+                <label class="amount-wrap"><span class="currency-symbol" id="fromSymbol">Rp</span><input class="amount" id="fromAmount" type="text" inputmode="decimal" value="1,000.00" aria-label="Source amount" autocomplete="off" spellcheck="false"></label>
             </div>
-            <div class="swap-row"><button class="swap" type="button" aria-label="Swap currencies"><span>Swap</span><span class="swap-icon">↔</span></button></div>
+            <div class="swap-row">
+                <img class="swap-divider" src="assets/figma-divider.svg" alt="">
+                <button class="swap" type="button" aria-label="Swap currencies"><span>Swap</span><img class="swap-icon" src="assets/figma-swap.svg" alt=""></button>
+                <img class="swap-divider" src="assets/figma-divider.svg" alt="">
+            </div>
+            <p class="destination-label">to this currency</p>
             <div class="currency-row">
-                <label class="currency" aria-label="Select target currency"><img id="toFlag" alt="Target currency flag"> <select id="toCurrency"></select><span class="chevron">⌄</span></label>
-                <label class="amount-wrap"><span class="currency-symbol" id="toSymbol">$</span><input class="amount" id="toAmount" value="0" aria-label="Target amount" readonly></label>
+                <div class="currency currency-combobox" data-select-id="toCurrency">
+                    <select id="toCurrency" tabindex="-1" aria-hidden="true"></select>
+                    <button class="combobox-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="toCurrency-listbox" aria-label="Select target currency">
+                        <img id="toFlag" alt="">
+                        <span class="combobox-value">—</span>
+                        <img class="chevron" src="assets/figma-chevron.svg" alt="">
+                    </button>
+                    <div class="combobox-menu" role="presentation">
+                        <input class="combobox-search" type="search" placeholder="Search currency" aria-label="Search target currencies" autocomplete="off">
+                        <ul class="combobox-options" id="toCurrency-listbox" role="listbox"></ul>
+                    </div>
+                </div>
+                <label class="amount-wrap"><span class="currency-symbol" id="toSymbol">$</span><input class="amount" id="toAmount" value="0.00" aria-label="Target amount" readonly></label>
             </div>
             <div class="rate">Rate: <strong id="rateValue">—</strong></div>
             <div class="status" id="status" role="status" aria-live="polite"></div>

@@ -40,6 +40,10 @@ const moodIconSources = {
 };
 const currencySymbols = { AED: "د.إ", AUD: "$", CAD: "$", CHF: "CHF", CNY: "¥", CZK: "Kč", DKK: "kr", EUR: "€", GBP: "£", HKD: "$", HUF: "Ft", IDR: "Rp", INR: "₹", JPY: "¥", KRW: "₩", MXN: "$", MYR: "RM", NOK: "kr", NZD: "$", PHP: "₱", PLN: "zł", SEK: "kr", SGD: "$", THB: "฿", TRY: "₺", USD: "$", ZAR: "R" };
 const format = new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 });
+const amountFormat = new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const numberParts = amountFormat.formatToParts(1234.5);
+const groupSeparator = numberParts.find(part => part.type === "group")?.value || ",";
+const decimalSeparator = numberParts.find(part => part.type === "decimal")?.value || ".";
 const percent = value => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
 const dateOnly = date => date.toISOString().slice(0, 10);
 const mean = values => values.reduce((sum, value) => sum + value, 0) / values.length;
@@ -130,6 +134,59 @@ function setFlag(select, image) {
     image.alt = `${select.value} flag`;
 }
 
+function renderCombobox(select) {
+    const combobox = select.closest(".currency-combobox");
+    const value = combobox.querySelector(".combobox-value");
+    const list = combobox.querySelector(".combobox-options");
+    const query = combobox.querySelector(".combobox-search").value.trim().toLowerCase();
+    const options = [...select.options].filter(option => option.textContent.toLowerCase().includes(query));
+    value.textContent = select.value || "—";
+    list.innerHTML = options.length
+        ? options.map(option => `<li class="combobox-option" role="option" tabindex="-1" data-value="${option.value}" aria-selected="${option.value === select.value}">${option.textContent}</li>`).join("")
+        : `<li class="combobox-empty">No currencies found</li>`;
+}
+
+function closeCombobox(combobox) {
+    combobox.classList.remove("is-open");
+    const trigger = combobox.querySelector(".combobox-trigger");
+    trigger.setAttribute("aria-expanded", "false");
+}
+
+function setupCombobox(select) {
+    const combobox = select.closest(".currency-combobox");
+    const trigger = combobox.querySelector(".combobox-trigger");
+    const search = combobox.querySelector(".combobox-search");
+    const list = combobox.querySelector(".combobox-options");
+    trigger.addEventListener("click", () => {
+        const isOpen = combobox.classList.toggle("is-open");
+        trigger.setAttribute("aria-expanded", String(isOpen));
+        if (isOpen) {
+            renderCombobox(select);
+            search.value = "";
+            search.focus();
+        }
+    });
+    search.addEventListener("input", () => renderCombobox(select));
+    list.addEventListener("click", event => {
+        const option = event.target.closest(".combobox-option");
+        if (!option) return;
+        select.value = option.dataset.value;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+        closeCombobox(combobox);
+        trigger.focus();
+    });
+    search.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            closeCombobox(combobox);
+            trigger.focus();
+        }
+    });
+}
+
+function updateComboboxes() {
+    document.querySelectorAll(".currency-combobox select").forEach(select => renderCombobox(select));
+}
+
 function updateSymbols() {
     fromSymbol.textContent = currencySymbols[fromCurrency.value] || fromCurrency.value;
     toSymbol.textContent = currencySymbols[toCurrency.value] || toCurrency.value;
@@ -142,11 +199,15 @@ function populateCurrencies(currencies) {
         .join("");
     fromCurrency.innerHTML = options;
     toCurrency.innerHTML = options;
-    fromCurrency.value = currencies.some(item => item.iso_code === "USD") ? "USD" : currencies[0].iso_code;
-    toCurrency.value = currencies.some(item => item.iso_code === "CAD") ? "CAD" : "EUR";
+    fromCurrency.value = currencies.some(item => item.iso_code === "IDR") ? "IDR" : currencies[0].iso_code;
+    toCurrency.value = currencies.some(item => item.iso_code === "AUD")
+        ? "AUD"
+        : currencies.find(item => item.iso_code !== fromCurrency.value)?.iso_code || fromCurrency.value;
+    fromAmount.value = amountFormat.format(1000);
     setFlag(fromCurrency, fromFlag);
     setFlag(toCurrency, toFlag);
     updateSymbols();
+    updateComboboxes();
 }
 
 async function loadCurrencies() {
@@ -180,8 +241,14 @@ async function loadHistory(from, to) {
 async function refreshRate() {
     const from = fromCurrency.value;
     const to = toCurrency.value;
+    const amountText = fromAmount.value.trim().split(groupSeparator).join("").replace(decimalSeparator, ".");
+    const amount = Number(amountText);
     if (!from || !to || from === to) {
         setStatus("Choose two different currencies.", true);
+        return;
+    }
+    if (!Number.isFinite(amount) || amount < 0) {
+        setStatus("Enter a valid amount.", true);
         return;
     }
     setStatus("Loading live and historical rates…");
@@ -189,21 +256,20 @@ async function refreshRate() {
         const [today, values] = await Promise.all([loadRate(from, to), loadHistory(from, to)]);
         if (!values.length) throw new Error("No historical data available");
         const last30 = values.slice(-30);
-        const last90 = values.slice(-90);
         const average30 = mean(last30);
         const average365 = mean(values);
         const roc30 = ((today - average30) / average30) * 100;
         const roc365 = ((today - average365) / average365) * 100;
-        const z = (today - mean(last90)) / (standardDeviation(last90) || 1);
-        const percentile = values.filter(value => value <= today).length / values.length;
+        const z = (today - average30) / (standardDeviation(last30) || 1);
+        const percentile = last30.filter(value => value <= today).length / last30.length;
         const score = Math.max(0, Math.min(100, Math.round(goalMode === "buy" ? (1 - percentile) * 100 : percentile * 100)));
         document.querySelector("#rateValue").textContent = format.format(today);
-            toAmount.value = format.format(Number(fromAmount.value || 0) * today);
+        toAmount.value = amountFormat.format(amount * today);
         document.querySelector("#score").textContent = score;
-        updateRecommendation(score, values.length >= 365 ? 365 : values.length);
+        updateRecommendation(score, last30.length);
         document.querySelector("#roc30").textContent = `↗ ${percent(roc30)}`;
         document.querySelector("#roc365").textContent = `↘ ${percent(roc365)}`;
-        setStatus(`Based on ${Math.min(values.length, 356)} days. Z-score: ${z.toFixed(2)}.`);
+        setStatus(`Based on ${last30.length} days. Z-score: ${z.toFixed(2)}.`);
     } catch (error) {
         console.error("Frankfurter error:", error);
         setStatus(`Unable to load rates: ${error.message}`, true);
@@ -214,6 +280,7 @@ document.querySelector("#dateLabel").textContent = new Intl.DateTimeFormat(undef
 [fromCurrency, toCurrency].forEach(control => control.addEventListener("change", () => {
     setFlag(control, control === fromCurrency ? fromFlag : toFlag);
     updateSymbols();
+    updateComboboxes();
     refreshRate();
 }));
 fromAmount.addEventListener("input", refreshRate);
@@ -224,19 +291,44 @@ document.querySelector(".swap").addEventListener("click", () => {
     setFlag(fromCurrency, fromFlag);
     setFlag(toCurrency, toFlag);
     updateSymbols();
+    updateComboboxes();
     refreshRate();
 });
-document.querySelectorAll(".currency").forEach(currencyControl => {
-    const select = currencyControl.querySelector("select");
-    const chevron = currencyControl.querySelector(".chevron");
-    chevron.addEventListener("click", event => {
-        event.preventDefault();
-        select.focus();
-        if (typeof select.showPicker === "function") select.showPicker();
+document.querySelectorAll(".currency-combobox select").forEach(setupCombobox);
+document.addEventListener("click", event => {
+    document.querySelectorAll(".currency-combobox.is-open").forEach(combobox => {
+        if (!combobox.contains(event.target)) closeCombobox(combobox);
     });
+});
+const goalCombobox = document.querySelector(".goal-combobox");
+const goalTrigger = goalCombobox.querySelector(".goal-trigger");
+const goalValue = goalCombobox.querySelector(".goal-value");
+const goalOptions = [...goalCombobox.querySelectorAll("[role='option']")];
+function closeGoalCombobox() {
+    goalCombobox.classList.remove("is-open");
+    goalTrigger.setAttribute("aria-expanded", "false");
+}
+goalTrigger.addEventListener("click", () => {
+    const isOpen = goalCombobox.classList.toggle("is-open");
+    goalTrigger.setAttribute("aria-expanded", String(isOpen));
+});
+goalOptions.forEach(option => option.addEventListener("click", () => {
+    goal.value = option.dataset.value;
+    goalMode = goal.value;
+    goalValue.textContent = goal.value;
+    updateSymbols();
+    goalOptions.forEach(item => item.setAttribute("aria-selected", String(item === option)));
+    closeGoalCombobox();
+    goalTrigger.focus();
+    refreshRate();
+}));
+document.addEventListener("click", event => {
+    if (!goalCombobox.contains(event.target)) closeGoalCombobox();
 });
 goal.addEventListener("change", () => {
     goalMode = goal.value;
+    goalValue.textContent = goal.value;
+    updateSymbols();
     refreshRate();
 });
 
